@@ -4,7 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
+import type { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
 
 @Entity('protocolos') 
 export class Protocolo {
@@ -21,9 +24,9 @@ export class Protocolo {
     @Column({type: 'text'})
     desc: string;
 
-    //agregar join con diagnóstico
-
-    //agregar manejo de imagenes
+    @OneToOne('Diagnostico', (diagnostico: Diagnostico) => diagnostico.protocolo, {nullable: true})
+    @JoinColumn()
+    diagnostico?: Diagnostico;
 
     @CreateDateColumn()
     creado: Date;

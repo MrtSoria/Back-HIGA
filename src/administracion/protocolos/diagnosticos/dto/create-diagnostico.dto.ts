@@ -5,7 +5,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class CreateProtocoloDto {
+export class CreateDiagnosticoDto {
 
     @IsString()
     @IsNotEmpty()
@@ -14,13 +14,6 @@ export class CreateProtocoloDto {
 
     @IsString()
     @IsNotEmpty()
-    @MaxLength(150)
-    subtitulo: string;
-
-    @IsString()
-    @IsNotEmpty()
     desc: string;
 
-    @IsOptional()
-    diagnosticoId?: number;
 }

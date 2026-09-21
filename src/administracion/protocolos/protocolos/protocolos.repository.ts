@@ -17,16 +17,21 @@ export class ProtocolosRepository {
     }
 
     async buscarTodos(): Promise<Protocolo[]> {
-        return this.protocoloRepository.find();
+        return this.protocoloRepository.find({
+            relations: {
+                diagnostico: true,
+            },
+        });
     }
 
     async buscarPorId(id: number): Promise<Protocolo | null> {
         return this.protocoloRepository.findOne({
             where: { id },
+            relations: {
+                diagnostico: true,
+            },
         });
     }
-
-    //Importante agregar la busqueda por criterio, hay que ver bien como definirlo, va a ser la funcinoalidad principal 
 
     async actualizar(
         id: number,

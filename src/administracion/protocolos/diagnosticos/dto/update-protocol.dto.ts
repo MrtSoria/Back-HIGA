@@ -4,7 +4,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class UpdateProtocoloDto {
+export class UpdateDiagnosticoDto {
     @IsOptional()
     @IsString()
     @MaxLength(150)
@@ -12,13 +12,6 @@ export class UpdateProtocoloDto {
   
     @IsOptional()
     @IsString()
-    @MaxLength(150)
-    subtitulo?: string;
-  
-    @IsOptional()
-    @IsString()
     desc?: string;
   
-    @IsOptional()
-    diagnosticoId?: number;
 }

@@ -6,12 +6,14 @@ import { CreateProtocoloDto } from './dto/create-protocolo.dto.js';
 import { UpdateProtocoloDto } from './dto/update-protocolo.dto.js';
 import { Protocolo } from './protocolos.entity.js';
 import { ProtocolosRepository } from './protocolos.repository.js';
+import { DiagnosticosService } from '../diagnosticos/diagnosticos.service.js';
 
 @Injectable()
 export class ProtocolosService {
 
     constructor(
         private readonly repository: ProtocolosRepository,
+        private readonly diagnosticosService: DiagnosticosService,
     ) {}
 
     async crear(
@@ -24,6 +26,14 @@ export class ProtocolosService {
         protocolo.subtitulo = dto.subtitulo;
         protocolo.desc = dto.desc;
 
+        if(dto.diagnosticoId !== undefined) {
+            const diagnostico = await this.diagnosticosService.buscarPorId(
+                dto.diagnosticoId,
+            );
+
+            protocolo.diagnostico = diagnostico;
+        }
+        
         return this.repository.crear(protocolo);
     }
 
@@ -45,8 +55,6 @@ export class ProtocolosService {
             return protocolo;
     }
 
-    //Importante agregar la busqueda por criterio, hay que ver bien como definirlo, va a ser la funcinoalidad principal 
-    //Ver esto tambien en el repository
 
     async actualizar(
         id: number,
@@ -55,8 +63,19 @@ export class ProtocolosService {
 
         await this.buscarPorId(id);
 
-        const actualizado =
-        await this.repository.actualizar(id, dto);
+        const datos: Partial<Protocolo> = {
+            titulo: dto.titulo,
+            subtitulo: dto.subtitulo,
+            desc: dto.desc,
+        };
+
+        if (dto.diagnosticoId !== undefined) {
+            datos.diagnostico = await this.diagnosticosService.buscarPorId(
+                dto.diagnosticoId,
+            );
+        }
+
+        const actualizado = await this.repository.actualizar(id, datos);
 
         return actualizado!;
     }
