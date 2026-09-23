@@ -12,6 +12,7 @@ import { DiagnosticosModule } from '../diagnosticos/diagnosticos.module.js';
     TypeOrmModule.forFeature([
       Protocolo,
     ]),
+    DiagnosticosModule,
   ],
 
   controllers: [
@@ -22,9 +23,5 @@ import { DiagnosticosModule } from '../diagnosticos/diagnosticos.module.js';
     ProtocolosService,
     ProtocolosRepository,
   ],
-
-  exports: [
-    ProtocolosService,
-  ],
 })
-export class ProtocolosModule {}
+export class ProtocolosModule { }

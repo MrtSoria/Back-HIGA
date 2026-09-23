@@ -6,7 +6,7 @@ export class ProtocoloResponseDto {
     titulo: string;
     subtitulo: string;
     desc: string;
-    diagnostico?: number;
+    diagnostico: number;
     creado: Date;
     modificado: Date;
 

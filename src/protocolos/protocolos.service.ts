@@ -1,6 +1,6 @@
 import {
-  Injectable,
-  NotFoundException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { CreateProtocoloDto } from './dto/create-protocolo.dto.js';
 import { UpdateProtocoloDto } from './dto/update-protocolo.dto.js';
@@ -14,7 +14,7 @@ export class ProtocolosService {
     constructor(
         private readonly repository: ProtocolosRepository,
         private readonly diagnosticosService: DiagnosticosService,
-    ) {}
+    ) { }
 
     async crear(
         dto: CreateProtocoloDto,
@@ -26,14 +26,12 @@ export class ProtocolosService {
         protocolo.subtitulo = dto.subtitulo;
         protocolo.desc = dto.desc;
 
-        if(dto.diagnosticoId !== undefined) {
-            const diagnostico = await this.diagnosticosService.buscarPorId(
-                dto.diagnosticoId,
-            );
+        const diagnostico = await this.diagnosticosService.buscarPorId(
+            dto.diagnosticoId,
+        );
 
-            protocolo.diagnostico = diagnostico;
-        }
-        
+        protocolo.diagnostico = diagnostico;
+
         return this.repository.crear(protocolo);
     }
 
@@ -52,7 +50,7 @@ export class ProtocolosService {
             );
         }
 
-            return protocolo;
+        return protocolo;
     }
 
 
