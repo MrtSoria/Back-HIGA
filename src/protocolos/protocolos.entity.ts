@@ -31,7 +31,7 @@ export class Protocolo {
     },
   )
   @JoinColumn({
-    name: 'id_diagnostico'
+    name: 'diagnostico'
   })
   diagnostico: Diagnostico;
 

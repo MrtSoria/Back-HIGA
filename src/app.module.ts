@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Diagnostico } from './diagnosticos/diagnosticos.entity.js';
 import { Protocolo } from './protocolos/protocolos.entity.js';
@@ -11,12 +11,16 @@ import { DiagnosticosModule } from './diagnosticos/diagnosticos.module.js';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      entities: [Diagnostico, Protocolo],
-      synchronize: false,
-      // Si se setea en true typeorm intentara crear las tablas en la base de datos, si no existen. Esto puede ser peligroso en producción.
+    TypeOrmModule.forRootAsync({
+      //imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        url: configService.get<string>('DATABASE_URL'),
+        entities: [Diagnostico, Protocolo],
+        synchronize: false,
+        // Si se setea en true typeorm intentara crear las tablas en la base de datos, si no existen. Esto puede ser peligroso en producción.
+      }),
     }),
     DiagnosticosModule,
     ProtocolosModule,

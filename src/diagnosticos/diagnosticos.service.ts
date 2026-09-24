@@ -12,7 +12,7 @@ export class DiagnosticosService {
 
 	constructor(
 		private readonly repository: DiagnosticosRepository,
-	) {}
+	) { }
 
 	async crear(
 		dto: CreateDiagnosticoDto,
