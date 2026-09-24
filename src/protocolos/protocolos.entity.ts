@@ -31,9 +31,9 @@ export class Protocolo {
     },
   )
   @JoinColumn({
-    name: 'diagnostico'
+    name: 'diagnosticoId'
   })
-  diagnostico: Diagnostico;
+  diagnosticoId: Diagnostico;
 
   @CreateDateColumn()
   creado: Date;

@@ -6,7 +6,7 @@ export class ProtocoloResponseDto {
     titulo: string;
     subtitulo: string;
     desc: string;
-    diagnostico: number;
+    diagnosticoId: number;
     creado: Date;
     modificado: Date;
 
@@ -15,7 +15,7 @@ export class ProtocoloResponseDto {
         this.titulo = protocolo.titulo;
         this.subtitulo = protocolo.subtitulo;
         this.desc = protocolo.desc;
-        this.diagnostico = protocolo.diagnostico?.id;
+        this.diagnosticoId = protocolo.diagnosticoId?.id;
         this.creado = protocolo.creado;
         this.modificado = protocolo.modificado;
     }
