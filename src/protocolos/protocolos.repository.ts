@@ -19,7 +19,7 @@ export class ProtocolosRepository {
     async buscarTodos(): Promise<Protocolo[]> {
         return this.protocoloRepository.find({
             relations: {
-                diagnosticoId: true,
+                id_diagnostico: true,
             },
         });
     }
@@ -28,7 +28,7 @@ export class ProtocolosRepository {
         return this.protocoloRepository.findOne({
             where: { id },
             relations: {
-                diagnosticoId: true,
+                id_diagnostico: true,
             },
         });
     }

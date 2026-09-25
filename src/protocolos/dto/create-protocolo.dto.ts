@@ -23,5 +23,5 @@ export class CreateProtocoloDto {
 
   @IsNotEmpty()
   @IsNumber()
-  diagnosticoId: number;
+  id_diagnostico: number;
 }

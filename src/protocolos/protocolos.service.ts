@@ -27,10 +27,10 @@ export class ProtocolosService {
         protocolo.desc = dto.desc;
 
         const diagnostico = await this.diagnosticosService.buscarPorId(
-            dto.diagnosticoId,
+            dto.id_diagnostico,
         );
 
-        protocolo.diagnosticoId = diagnostico;
+        protocolo.id_diagnostico = diagnostico;
 
         return this.repository.crear(protocolo);
     }
@@ -67,9 +67,9 @@ export class ProtocolosService {
             desc: dto.desc,
         };
 
-        if (dto.diagnosticoId !== undefined) {
-            datos.diagnosticoId = await this.diagnosticosService.buscarPorId(
-                dto.diagnosticoId,
+        if (dto.id_diagnostico !== undefined) {
+            datos.id_diagnostico = await this.diagnosticosService.buscarPorId(
+                dto.id_diagnostico,
             );
         }
 

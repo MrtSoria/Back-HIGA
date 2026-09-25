@@ -18,7 +18,7 @@ export class DiagnosticosController {
 
 	constructor(
 		private readonly service: DiagnosticosService,
-	) {}
+	) { }
 
 	@Post()
 	async crear(

@@ -21,7 +21,7 @@ export class Diagnostico {
   desc: string;
 
   @OneToOne('Protocolo',
-    (protocolo: Protocolo) => protocolo.diagnosticoId)
+    (protocolo: Protocolo) => protocolo.id_diagnostico)
   protocolo?: Protocolo;
 
   @CreateDateColumn()

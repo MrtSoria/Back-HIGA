@@ -22,5 +22,5 @@ export class UpdateProtocoloDto {
 
   @IsOptional()
   @IsNumber()
-  diagnosticoId?: number;
+  id_diagnostico?: number;
 }
