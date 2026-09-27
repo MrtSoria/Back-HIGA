@@ -3,7 +3,7 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import { CreateDiagnosticoDto } from './dto/create-diagnostico.dto.js';
-import { UpdateDiagnosticoDto } from './dto/update-protocol.dto.js';
+import { UpdateDiagnosticoDto } from './dto/update-diagnostic.dto.js';
 import { Diagnostico } from './diagnosticos.entity.js';
 import { DiagnosticosRepository } from './diagnosticos.repository.js';
 

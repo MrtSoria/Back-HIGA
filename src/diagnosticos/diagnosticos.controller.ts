@@ -11,7 +11,7 @@ import {
 import { DiagnosticosService } from './diagnosticos.service.js';
 import { CreateDiagnosticoDto } from './dto/create-diagnostico.dto.js';
 import { DiagnosticoResponseDto } from './dto/diagnostic-response.dto.js';
-import { UpdateDiagnosticoDto } from './dto/update-protocol.dto.js';
+import { UpdateDiagnosticoDto } from './dto/update-diagnostic.dto.js';
 
 @Controller('diagnosticos')
 export class DiagnosticosController {
