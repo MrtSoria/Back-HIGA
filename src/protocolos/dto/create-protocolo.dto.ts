@@ -10,11 +10,6 @@ export class CreateProtocoloDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(150)
-  titulo: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(150)
   subtitulo: string;
 
   @IsNotEmpty()

@@ -9,11 +9,6 @@ export class UpdateProtocoloDto {
   @IsOptional()
   @IsString()
   @MaxLength(150)
-  titulo?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(150)
   subtitulo?: string;
 
   @IsOptional()

@@ -15,9 +15,6 @@ export class Protocolo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 150, unique: true })
-  titulo: string;
-
   @Column({ length: 150 })
   subtitulo: string;
 

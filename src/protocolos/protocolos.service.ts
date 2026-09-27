@@ -22,7 +22,6 @@ export class ProtocolosService {
 
         const protocolo = new Protocolo();
 
-        protocolo.titulo = dto.titulo;
         protocolo.subtitulo = dto.subtitulo;
         protocolo.desc = dto.desc;
 
@@ -62,7 +61,6 @@ export class ProtocolosService {
         await this.buscarPorId(id);
 
         const datos: Partial<Protocolo> = {
-            titulo: dto.titulo,
             subtitulo: dto.subtitulo,
             desc: dto.desc,
         };
