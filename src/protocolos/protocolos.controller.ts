@@ -1,12 +1,11 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
 } from '@nestjs/common';
 import { ProtocolosService } from './protocolos.service.js';
 import { CreateProtocoloDto } from './dto/create-protocolo.dto.js';
@@ -19,7 +18,7 @@ export class ProtocolosController {
 
     constructor(
         private readonly service: ProtocolosService,
-    ) {}
+    ) { }
 
     @Post()
     async crear(
@@ -27,7 +26,7 @@ export class ProtocolosController {
     ) {
 
         const protocolo =
-        await this.service.crear(dto);
+            await this.service.crear(dto);
 
         return new ProtocoloResponseDto(protocolo);
     }
@@ -36,47 +35,47 @@ export class ProtocolosController {
     async buscarTodos() {
 
         const protocolos =
-        await this.service.buscarTodos();
+            await this.service.buscarTodos();
 
         return protocolos.map(
-        protocolo =>
-            new ProtocoloResponseDto(protocolo),
+            protocolo =>
+                new ProtocoloResponseDto(protocolo),
         );
     }
 
     @Get(':id')
     async buscarPorId(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('id') id: string,
     ) {
 
         const protocolo =
-        await this.service.buscarPorId(id);
+            await this.service.buscarPorId(id);
 
         return new ProtocoloResponseDto(protocolo);
     }
 
     @Patch(':id')
     async actualizar(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('id') id: string,
 
         @Body() dto: UpdateProtocoloDto,
     ) {
 
         const protocolo =
-        await this.service.actualizar(id, dto);
+            await this.service.actualizar(id, dto);
 
         return new ProtocoloResponseDto(protocolo);
     }
 
     @Delete(':id')
     async eliminar(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('id') id: string,
     ) {
 
         await this.service.eliminar(id);
 
         return {
-        mensaje: 'Protocolo eliminado correctamente',
+            mensaje: 'Protocolo eliminado correctamente',
         };
     }
 }

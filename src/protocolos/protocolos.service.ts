@@ -38,7 +38,7 @@ export class ProtocolosService {
         return this.repository.buscarTodos();
     }
 
-    async buscarPorId(id: number): Promise<Protocolo> {
+    async buscarPorId(id: string): Promise<Protocolo> {
 
         const protocolo =
             await this.repository.buscarPorId(id);
@@ -54,7 +54,7 @@ export class ProtocolosService {
 
 
     async actualizar(
-        id: number,
+        id: string,
         dto: UpdateProtocoloDto,
     ): Promise<Protocolo> {
 
@@ -77,7 +77,7 @@ export class ProtocolosService {
     }
 
 
-    async eliminar(id: number): Promise<void> {
+    async eliminar(id: string): Promise<void> {
 
         await this.buscarPorId(id);
 

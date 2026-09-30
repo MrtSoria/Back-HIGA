@@ -2,10 +2,10 @@ import { Protocolo } from '../protocolos.entity.js';
 
 export class ProtocoloResponseDto {
 
-    id: number;
+    id: string;
     subtitulo: string;
     desc: string;
-    id_diagnostico: number;
+    id_diagnostico: string;
     creado: Date;
     modificado: Date;
 

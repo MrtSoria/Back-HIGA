@@ -11,8 +11,8 @@ import type { Protocolo } from '../protocolos/protocolos.entity.js';
 @Entity('diagnosticos')
 export class Diagnostico {
 
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn({ type: 'bigint' })
+  id: string;
 
   @Column({ length: 150, unique: true })
   titulo: string;

@@ -14,7 +14,7 @@ export class DiagnosticosRepository {
 		return this.diagnosticoRepository.find();
 	}
 
-	async buscarPorId(id: number): Promise<Diagnostico | null> {
+	async buscarPorId(id: string): Promise<Diagnostico | null> {
 		return this.diagnosticoRepository.findOne({ where: { id } });
 	}
 
@@ -23,14 +23,14 @@ export class DiagnosticosRepository {
 	}
 
 	async actualizar(
-		id: number,
+		id: string,
 		datos: Partial<Diagnostico>,
 	): Promise<Diagnostico | null> {
 		await this.diagnosticoRepository.update(id, datos);
 		return this.buscarPorId(id);
 	}
 
-	async eliminar(id: number): Promise<void> {
+	async eliminar(id: string): Promise<void> {
 		await this.diagnosticoRepository.delete(id);
 	}
 }
