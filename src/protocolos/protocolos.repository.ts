@@ -24,7 +24,7 @@ export class ProtocolosRepository {
         });
     }
 
-    async buscarPorId(id: number): Promise<Protocolo | null> {
+    async buscarPorId(id: string): Promise<Protocolo | null> {
         return this.protocoloRepository.findOne({
             where: { id },
             relations: {
@@ -34,14 +34,14 @@ export class ProtocolosRepository {
     }
 
     async actualizar(
-        id: number,
+        id: string,
         datos: Partial<Protocolo>,
     ): Promise<Protocolo | null> {
         await this.protocoloRepository.update(id, datos);
         return this.buscarPorId(id);
     }
 
-    async eliminar(id: number): Promise<void> {
+    async eliminar(id: string): Promise<void> {
         await this.protocoloRepository.delete(id);
     }
 }

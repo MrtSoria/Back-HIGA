@@ -4,7 +4,6 @@ import {
 	Delete,
 	Get,
 	Param,
-	ParseIntPipe,
 	Patch,
 	Post,
 } from '@nestjs/common';
@@ -40,7 +39,7 @@ export class DiagnosticosController {
 
 	@Get(':id')
 	async buscarPorId(
-		@Param('id', ParseIntPipe) id: number,
+		@Param('id') id: string,
 	) {
 		const diagnostico = await this.service.buscarPorId(id);
 
@@ -49,7 +48,7 @@ export class DiagnosticosController {
 
 	@Patch(':id')
 	async actualizar(
-		@Param('id', ParseIntPipe) id: number,
+		@Param('id') id: string,
 		@Body() dto: UpdateDiagnosticoDto,
 	) {
 		const diagnostico = await this.service.actualizar(id, dto);
@@ -59,7 +58,7 @@ export class DiagnosticosController {
 
 	@Delete(':id')
 	async eliminar(
-		@Param('id', ParseIntPipe) id: number,
+		@Param('id') id: string,
 	) {
 		await this.service.eliminar(id);
 

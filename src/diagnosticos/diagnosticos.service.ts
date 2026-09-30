@@ -29,7 +29,7 @@ export class DiagnosticosService {
 		return this.repository.buscarTodos();
 	}
 
-	async buscarPorId(id: number): Promise<Diagnostico> {
+	async buscarPorId(id: string): Promise<Diagnostico> {
 		const diagnostico = await this.repository.buscarPorId(id);
 
 		if (!diagnostico) {
@@ -42,7 +42,7 @@ export class DiagnosticosService {
 	}
 
 	async actualizar(
-		id: number,
+		id: string,
 		dto: UpdateDiagnosticoDto,
 	): Promise<Diagnostico> {
 		await this.buscarPorId(id);
@@ -52,7 +52,7 @@ export class DiagnosticosService {
 		return actualizado!;
 	}
 
-	async eliminar(id: number): Promise<void> {
+	async eliminar(id: string): Promise<void> {
 		await this.buscarPorId(id);
 
 		await this.repository.eliminar(id);

@@ -3,7 +3,7 @@ import { Protocolo } from '../../protocolos/protocolos.entity.js';
 
 export class DiagnosticoResponseDto {
 
-    id: number;
+    id: string;
     titulo: string;
     desc: string;
     protocolo?: Protocolo;

@@ -1,6 +1,5 @@
 import {
   IsNotEmpty,
-  IsNumber,
   IsString,
   MaxLength,
 } from 'class-validator';
@@ -17,6 +16,6 @@ export class CreateProtocoloDto {
   desc: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  id_diagnostico: number;
+  @IsString()
+  id_diagnostico: string;
 }
