@@ -6,7 +6,8 @@ import {
   UpdateDateColumn,
   OneToOne,
 } from 'typeorm';
-import type { Protocolo } from '../protocolos/protocolos.entity.js';
+import type { Relation } from 'typeorm';
+import { Protocolo } from '../protocolos/protocolos.entity.js';
 
 @Entity('diagnosticos')
 export class Diagnostico {
@@ -20,13 +21,12 @@ export class Diagnostico {
   @Column({ type: 'text' })
   desc: string;
 
-  @OneToOne('Protocolo',
-    (protocolo: Protocolo) => protocolo.id_diagnostico)
-  protocolo?: Protocolo;
+  @OneToOne(() => Protocolo, (protocolo) => protocolo.diagnostico)
+  protocolo: Relation<Protocolo>;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   creado: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   modificado: Date;
 }

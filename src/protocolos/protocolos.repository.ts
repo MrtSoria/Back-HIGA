@@ -9,7 +9,7 @@ export class ProtocolosRepository {
 
     constructor(
         @InjectRepository(Protocolo)
-        private protocoloRepository: Repository<Protocolo>,
+        private readonly protocoloRepository: Repository<Protocolo>,
     ) { }
 
     async crear(protocolo: Protocolo): Promise<Protocolo> {
@@ -19,7 +19,7 @@ export class ProtocolosRepository {
     async buscarTodos(): Promise<Protocolo[]> {
         return this.protocoloRepository.find({
             relations: {
-                id_diagnostico: true,
+                diagnostico: true,
             },
         });
     }
@@ -28,7 +28,7 @@ export class ProtocolosRepository {
         return this.protocoloRepository.findOne({
             where: { id },
             relations: {
-                id_diagnostico: true,
+                diagnostico: true,
             },
         });
     }

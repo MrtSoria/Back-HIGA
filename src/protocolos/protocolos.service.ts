@@ -7,6 +7,9 @@ import { UpdateProtocoloDto } from './dto/update-protocolo.dto.js';
 import { Protocolo } from './protocolos.entity.js';
 import { ProtocolosRepository } from './protocolos.repository.js';
 import { DiagnosticosService } from '../diagnosticos/diagnosticos.service.js';
+import { HistorialService } from '../historial/historial.service.js';
+import { Entidad, Operacion } from '../historial/historial.enums.js';
+import { InternalServerErrorException } from '@nestjs/common/exceptions/internal-server-error.exception.js';
 
 @Injectable()
 export class ProtocolosService {
@@ -14,6 +17,7 @@ export class ProtocolosService {
     constructor(
         private readonly repository: ProtocolosRepository,
         private readonly diagnosticosService: DiagnosticosService,
+        private readonly historialService: HistorialService,
     ) { }
 
     async crear(
@@ -29,9 +33,17 @@ export class ProtocolosService {
             dto.id_diagnostico,
         );
 
-        protocolo.id_diagnostico = diagnostico;
+        protocolo.diagnostico = diagnostico;
 
-        return this.repository.crear(protocolo);
+        const creado = await this.repository.crear(protocolo);
+
+        await this.historialService.registrarCambio(
+            Entidad.PROTOCOLO,
+            creado.id,
+            Operacion.CREATE,
+        );
+
+        return creado;
     }
 
     async buscarTodos(): Promise<Protocolo[]> {
@@ -48,10 +60,8 @@ export class ProtocolosService {
                 `No existe el protocolo ${id}`,
             );
         }
-
         return protocolo;
     }
-
 
     async actualizar(
         id: string,
@@ -66,21 +76,38 @@ export class ProtocolosService {
         };
 
         if (dto.id_diagnostico !== undefined) {
-            datos.id_diagnostico = await this.diagnosticosService.buscarPorId(
+            datos.diagnostico = await this.diagnosticosService.buscarPorId(
                 dto.id_diagnostico,
             );
         }
 
         const actualizado = await this.repository.actualizar(id, datos);
 
-        return actualizado!;
-    }
+        if (!actualizado) {
+            throw new InternalServerErrorException(
+                `No se pudo actualizar el protocolo ${id}`,
+            );
+        }
 
+        await this.historialService.registrarCambio(
+            Entidad.PROTOCOLO,
+            actualizado.id,
+            Operacion.UPDATE,
+        );
+
+        return actualizado;
+    }
 
     async eliminar(id: string): Promise<void> {
 
         await this.buscarPorId(id);
 
         await this.repository.eliminar(id);
+
+        await this.historialService.registrarCambio(
+            Entidad.PROTOCOLO,
+            id,
+            Operacion.DELETE,
+        );
     }
 }

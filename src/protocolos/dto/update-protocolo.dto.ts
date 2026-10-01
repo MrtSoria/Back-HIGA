@@ -1,4 +1,5 @@
 import {
+  IsNumberString,
   IsOptional,
   IsString,
   MaxLength,
@@ -15,6 +16,6 @@ export class UpdateProtocoloDto {
   desc?: string;
 
   @IsOptional()
-  @IsString()
+  @IsNumberString()
   id_diagnostico?: string;
 }

@@ -5,6 +5,7 @@ import { ProtocolosService } from './protocolos.service.js';
 import { ProtocolosRepository } from './protocolos.repository.js';
 import { Protocolo } from './protocolos.entity.js';
 import { DiagnosticosModule } from '../diagnosticos/diagnosticos.module.js';
+import { HistorialModule } from '../historial/historial.module.js';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { DiagnosticosModule } from '../diagnosticos/diagnosticos.module.js';
       Protocolo,
     ]),
     DiagnosticosModule,
+    HistorialModule,
   ],
 
   controllers: [

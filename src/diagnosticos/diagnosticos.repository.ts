@@ -11,11 +11,13 @@ export class DiagnosticosRepository {
 	) { }
 
 	async buscarTodos(): Promise<Diagnostico[]> {
-		return this.diagnosticoRepository.find();
+		return this.diagnosticoRepository.find({
+			relations: { protocolo: true },
+		});
 	}
 
 	async buscarPorId(id: string): Promise<Diagnostico | null> {
-		return this.diagnosticoRepository.findOne({ where: { id } });
+		return this.diagnosticoRepository.findOne({ where: { id }, relations: { protocolo: true } });
 	}
 
 	async crear(diagnostico: Diagnostico): Promise<Diagnostico> {

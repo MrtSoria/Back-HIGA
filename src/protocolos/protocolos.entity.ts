@@ -7,7 +7,8 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import type { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
+import type { Relation } from 'typeorm';
+import { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
 
 @Entity('protocolos')
 export class Protocolo {
@@ -21,20 +22,15 @@ export class Protocolo {
   @Column({ type: 'text' })
   desc: string;
 
-  @OneToOne('Diagnostico',
-    (diagnostico: Diagnostico) => diagnostico.protocolo,
-    {
-      onDelete: 'RESTRICT',
-    },
+  @OneToOne(() => Diagnostico,
+    { onDelete: 'RESTRICT' }
   )
-  @JoinColumn({
-    name: 'id_diagnostico'
-  })
-  id_diagnostico: Diagnostico;
+  @JoinColumn({ name: 'id_diagnostico' })
+  diagnostico: Relation<Diagnostico>;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   creado: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   modificado: Date;
 }
