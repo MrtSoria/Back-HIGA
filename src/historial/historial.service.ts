@@ -5,7 +5,7 @@ import { HistorialRepository } from './historial.repository.js';
 @Injectable()
 export class HistorialService {
     constructor(
-        private readonly historialRepository: HistorialRepository,
+        private readonly repository: HistorialRepository,
     ) { }
 
     async registrarCambio(
@@ -13,10 +13,14 @@ export class HistorialService {
         id_entidad: string,
         operacion: Operacion,
     ) {
-        return this.historialRepository.crear({
+        return this.repository.crear({
             entidad,
             id_entidad,
             operacion,
         });
+    }
+
+    async buscarTodos() {
+        return this.repository.buscarTodos();
     }
 }
