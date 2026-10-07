@@ -3,6 +3,9 @@ import { SyncRequestDto } from './dto/sync-request.dto.js';
 import { SyncRepository } from './sync.repository.js';
 import { Cambio } from '../historial/historial.entity.js';
 import { Entidad, Operacion } from '../historial/historial.enums.js';
+import { SyncResponseDto } from './dto/sync-response.dto.js';
+import { DiagnosticoResponseDto } from '../diagnosticos/dto/diagnostic-response.dto.js';
+import { ProtocoloResponseDto } from '../protocolos/dto/protocol-response.dto.js';
 
 @Injectable()
 export class SyncService {
@@ -10,21 +13,37 @@ export class SyncService {
         private readonly repository: SyncRepository,
     ) { }
 
-    async sincronizar(dto: SyncRequestDto) {
-        const cambios = await this.repository.getSyncData(dto.last_sync)
-        const cambiosClasificados = new Map<string, Cambio>();
+    async sincronizar(dto: SyncRequestDto): Promise<SyncResponseDto> {
+        const cambios = await this.repository.getSyncData(dto.sync);
 
+        // Se guarda la ultima operacion sobre una entidad para evitar acciones 
+        // redundantes o innecesarias. 
+        const cambiosConsolidados = new Map<string, Cambio>();
         for (const cambio of cambios) {
             const key = `${cambio.entidad}-${cambio.id_entidad}`;
-            cambiosClasificados.set(key, cambio);
+            const cambioAnterior = cambiosConsolidados.get(key);
+
+            if (
+                cambioAnterior?.operacion === Operacion.CREATE &&
+                cambio.operacion === Operacion.UPDATE
+            ) continue;
+
+            if (
+                cambioAnterior?.operacion === Operacion.CREATE &&
+                cambio.operacion === Operacion.DELETE
+            ) {
+                cambiosConsolidados.delete(key);
+                continue;
+            }
+
+            cambiosConsolidados.set(key, cambio);
         }
 
         type Entity =
             | Entidad.DIAGNOSTICO
             | Entidad.PROTOCOLO;
-        //Aca hay que agregar las entidades que se quieran sincronizar
 
-        const resultado: Record<Operacion,
+        const idsPorOperacion: Record<Operacion,
             Record<Entity, string[]>> = {
             [Operacion.CREATE]: {
                 [Entidad.DIAGNOSTICO]: [],
@@ -40,18 +59,59 @@ export class SyncService {
             }
         }
 
-        for (const cambio of cambiosClasificados.values()) {
+        let nroSync = dto.sync;
+        for (const cambio of cambiosConsolidados.values()) {
             if (
                 cambio.entidad === Entidad.DIAGNOSTICO ||
                 cambio.entidad === Entidad.PROTOCOLO
             ) {
-                resultado[cambio.operacion][cambio.entidad]
+                idsPorOperacion[cambio.operacion][cambio.entidad]
                     .push(cambio.id_entidad);
             }
         }
+
+        if (cambios.length > 0) {
+            nroSync = cambios[cambios.length - 1].id;
+        }
+
+        const [diagnosticosCreados, diagnosticosActualizados,
+            protocolosCreados, protocolosActualizados] = await Promise.all([
+                this.repository.getDiagnosticos(
+                    idsPorOperacion[Operacion.CREATE][Entidad.DIAGNOSTICO],
+                ),
+                this.repository.getDiagnosticos(
+                    idsPorOperacion[Operacion.UPDATE][Entidad.DIAGNOSTICO],
+                ),
+                this.repository.getProtocolos(
+                    idsPorOperacion[Operacion.CREATE][Entidad.PROTOCOLO],
+                ),
+                this.repository.getProtocolos(
+                    idsPorOperacion[Operacion.UPDATE][Entidad.PROTOCOLO],
+                ),
+            ]);
+
         return {
-            last_sync: await this.repository.getLastSync(),
-            cambios: resultado
+            nro_sync: nroSync,
+            created: {
+                diagnosticos: diagnosticosCreados.map(
+                    (diagnostico) => new DiagnosticoResponseDto(diagnostico),
+                ),
+                protocolos: protocolosCreados.map(
+                    (protocolo) => new ProtocoloResponseDto(protocolo),
+                ),
+            },
+            updated: {
+                diagnosticos: diagnosticosActualizados.map(
+                    (diagnostico) => new DiagnosticoResponseDto(diagnostico),
+                ),
+                protocolos: protocolosActualizados.map(
+                    (protocolo) => new ProtocoloResponseDto(protocolo),
+                ),
+            },
+            deleted: {
+                diagnosticos: idsPorOperacion[Operacion.DELETE][Entidad.DIAGNOSTICO],
+                protocolos: idsPorOperacion[Operacion.DELETE][Entidad.PROTOCOLO],
+            },
         };
     }
 }

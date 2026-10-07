@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Cambio } from '../historial/historial.entity.js';
-import { Repository } from 'typeorm/browser/repository/Repository.js';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In } from 'typeorm';
 import { Protocolo } from '../protocolos/protocolos.entity.js';
 import { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
+import { In } from 'typeorm'
 
 @Injectable()
 export class SyncRepository {
@@ -19,13 +19,6 @@ export class SyncRepository {
         private readonly protocoloRepository: Repository<Protocolo>,
     ) { }
 
-    async getLastSync(): Promise<string> {
-        const ultimoCambio = await this.cambioRepository.findOne({
-            order: { id: 'DESC' },
-        });
-        return ultimoCambio?.id ?? '0';
-    }
-
     async getSyncData(
         lastSync: string
     ): Promise<Cambio[]> {
@@ -39,15 +32,28 @@ export class SyncRepository {
     }
 
     async getDiagnosticos(ids: string[]): Promise<Diagnostico[]> {
-        return this.diagnosticoRepository.find({
-            //where: { id: In<string>(ids) },
-            relations: { protocolo: true },
-        });
+        if (!ids || ids.length === 0) {
+            return [];
+        }
+
+        return await this.diagnosticoRepository.find({
+            where: {
+                id: In(ids)
+            },
+            relations: { protocolo: true }
+        })
     }
 
     async getProtocolos(ids: string[]): Promise<Protocolo[]> {
-        return this.protocoloRepository.find({
-            //where: { id: In<string>(ids) },
+        if (!ids || ids.length === 0) {
+            return [];
+        }
+
+        return await this.protocoloRepository.find({
+            where: {
+                id: In(ids)
+            },
+            relations: { diagnostico: true }
         });
     }
 }

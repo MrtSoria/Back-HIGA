@@ -1,9 +1,11 @@
 import { IsNumberString } from "class-validator";
 
 export class SyncRequestDto {
+    // id_usuario
     @IsNumberString()
-    id_usuario: string;
+    id: string;
 
+    // nro_sync
     @IsNumberString()
-    last_sync: string;
+    sync: string;
 }

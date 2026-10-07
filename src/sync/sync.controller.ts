@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { SyncService } from './sync.service.js';
 import { SyncRequestDto } from './dto/sync-request.dto.js';
 
