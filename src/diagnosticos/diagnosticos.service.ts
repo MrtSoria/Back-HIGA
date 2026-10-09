@@ -27,6 +27,7 @@ export class DiagnosticosService {
 
 		diagnostico.titulo = dto.titulo;
 		diagnostico.desc = dto.desc;
+		diagnostico.etiquetas = dto.etiquetas ?? [];
 
 		const creado = await this.repository.crear(diagnostico);
 

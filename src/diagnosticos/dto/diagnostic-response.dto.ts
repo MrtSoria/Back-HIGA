@@ -7,13 +7,14 @@ export class DiagnosticoResponseDto {
     titulo: string;
     desc: string;
     protocolo?: ProtocoloResponseDto;
+    etiquetas: string[];
 
     constructor(diagnostico: Diagnostico) {
         this.id = diagnostico.id;
         this.titulo = diagnostico.titulo;
         this.desc = diagnostico.desc;
-
         this.protocolo = diagnostico.protocolo ?
             new ProtocoloResponseDto(diagnostico.protocolo) : undefined;
+        this.etiquetas = diagnostico.etiquetas;
     }
 }

@@ -24,6 +24,9 @@ export class Diagnostico {
   @OneToOne(() => Protocolo, (protocolo) => protocolo.diagnostico)
   protocolo: Relation<Protocolo>;
 
+  @Column({ type: 'varchar', length: 50, array: true, default: () => "'{}'" })
+  etiquetas: string[];
+
   @CreateDateColumn({ type: 'timestamptz' })
   creado: Date;
 

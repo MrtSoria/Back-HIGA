@@ -3,6 +3,8 @@ import {
   IsString,
   Matches,
   MaxLength,
+  IsArray,
+  ArrayMaxSize
 } from 'class-validator';
 
 export class UpdateDiagnosticoDto {
@@ -17,4 +19,10 @@ export class UpdateDiagnosticoDto {
   @Matches(/\S/)
   desc?: string;
 
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @IsString({ each: true })
+  @MaxLength(50, { each: true })
+  etiquetas?: string[]
 }

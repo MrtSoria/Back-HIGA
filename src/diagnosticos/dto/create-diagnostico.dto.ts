@@ -1,5 +1,8 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -17,4 +20,10 @@ export class CreateDiagnosticoDto {
   @Matches(/\S/)
   desc: string;
 
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @IsString({ each: true })
+  @MaxLength(50, { each: true })
+  etiquetas?: string[]
 }
