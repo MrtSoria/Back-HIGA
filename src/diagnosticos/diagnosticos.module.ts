@@ -5,11 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Diagnostico } from './diagnosticos.entity.js';
 import { DiagnosticosRepository } from './diagnosticos.repository.js';
 import { HistorialModule } from '../historial/historial.module.js';
+import { Especialidad } from '../especialidades/especialidades.entity.js';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Diagnostico,
+      Especialidad
     ]),
     HistorialModule,
   ],

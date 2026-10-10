@@ -4,7 +4,8 @@ import {
   Matches,
   MaxLength,
   IsArray,
-  ArrayMaxSize
+  ArrayMaxSize,
+  IsNumberString
 } from 'class-validator';
 
 export class UpdateDiagnosticoDto {
@@ -18,6 +19,11 @@ export class UpdateDiagnosticoDto {
   @IsString()
   @Matches(/\S/)
   desc?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsNumberString({}, { each: true })
+  especialidades?: string[];
 
   @IsOptional()
   @IsArray()

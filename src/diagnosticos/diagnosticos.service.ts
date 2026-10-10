@@ -29,7 +29,19 @@ export class DiagnosticosService {
 		diagnostico.desc = dto.desc;
 		diagnostico.etiquetas = dto.etiquetas ?? [];
 
+		const especialidades = await this.repository.buscarEspecialidades(
+			dto.especialidades,
+		);
+
+		diagnostico.especialidades = especialidades;
+
 		const creado = await this.repository.crear(diagnostico);
+
+		if (especialidades.length !== dto.especialidades.length) {
+			throw new NotFoundException(
+				'Una o más especialidades no existen'
+			);
+		}
 
 		await this.historialService.registrarCambio(
 			Entidad.DIAGNOSTICO,
@@ -61,7 +73,24 @@ export class DiagnosticosService {
 	): Promise<Diagnostico> {
 		await this.buscarPorId(id);
 
-		const actualizado = await this.repository.actualizar(id, dto);
+		const { especialidades: ids_especialidades, ...campos } = dto;
+		const datos: Partial<Diagnostico> = { ...campos };
+
+		if (ids_especialidades !== undefined) {
+			const especialidades = await this.repository.buscarEspecialidades(
+				ids_especialidades,
+			);
+
+			if (especialidades.length !== ids_especialidades.length) {
+				throw new NotFoundException(
+					'Una o más especialidades no existen'
+				);
+			}
+
+			datos.especialidades = especialidades;
+		}
+
+		const actualizado = await this.repository.actualizar(id, datos);
 
 		if (!actualizado) {
 			throw new InternalServerErrorException(

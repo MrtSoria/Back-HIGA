@@ -2,6 +2,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsNotEmpty,
+  IsNumberString,
   IsOptional,
   IsString,
   Matches,
@@ -19,6 +20,10 @@ export class CreateDiagnosticoDto {
   @IsNotEmpty()
   @Matches(/\S/)
   desc: string;
+
+  @IsArray()
+  @IsNumberString({}, { each: true })
+  especialidades: string[];
 
   @IsOptional()
   @IsArray()

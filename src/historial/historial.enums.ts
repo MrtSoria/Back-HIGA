@@ -2,7 +2,8 @@ export enum Entidad {
     DIAGNOSTICO = 'diagnostico',
     PROTOCOLO = 'protocolo',
     PACIENTE = 'paciente',
-    USUARIO = 'usuario'
+    USUARIO = 'usuario',
+    ESPECIALIDAD = 'especialidad'
 }
 
 export enum Operacion {

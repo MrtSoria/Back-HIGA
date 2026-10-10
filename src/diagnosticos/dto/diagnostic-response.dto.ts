@@ -1,4 +1,5 @@
 import { Diagnostico } from '../../diagnosticos/diagnosticos.entity.js';
+import { EspecialidadResponseDto } from '../../especialidades/dto/especialidad-response.dto.js';
 import { ProtocoloResponseDto } from '../../protocolos/dto/protocol-response.dto.js';
 
 export class DiagnosticoResponseDto {
@@ -7,6 +8,7 @@ export class DiagnosticoResponseDto {
     titulo: string;
     desc: string;
     protocolo?: ProtocoloResponseDto;
+    especialidades: EspecialidadResponseDto[];
     etiquetas: string[];
 
     constructor(diagnostico: Diagnostico) {
@@ -15,6 +17,9 @@ export class DiagnosticoResponseDto {
         this.desc = diagnostico.desc;
         this.protocolo = diagnostico.protocolo ?
             new ProtocoloResponseDto(diagnostico.protocolo) : undefined;
-        this.etiquetas = diagnostico.etiquetas;
+        this.especialidades = diagnostico.especialidades.map(
+            (especialidad) => new EspecialidadResponseDto(especialidad)
+        );
+        this.etiquetas = diagnostico.etiquetas ?? [];
     }
 }
