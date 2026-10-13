@@ -10,6 +10,8 @@ import { HistorialModule } from './historial/historial.module.js';
 import { Cambio } from './historial/historial.entity.js';
 import { EspecialidadesModule } from './especialidades/especialidades.module.js';
 import { Especialidad } from './especialidades/especialidades.entity.js';
+import { UsuariosModule } from './usuarios/usuarios.module.js';
+import { Usuario } from './usuarios/usuarios.entity.js';
 
 @Module({
   imports: [
@@ -21,7 +23,7 @@ import { Especialidad } from './especialidades/especialidades.entity.js';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'),
-        entities: [Diagnostico, Protocolo, Cambio, Especialidad],
+        entities: [Diagnostico, Protocolo, Cambio, Especialidad, Usuario],
         synchronize: false,
         // Si se setea en true typeorm intentara crear las tablas en la base de datos, si no existen. Esto puede ser peligroso en producción.
       }),
@@ -31,6 +33,7 @@ import { Especialidad } from './especialidades/especialidades.entity.js';
     SyncModule,
     HistorialModule,
     EspecialidadesModule,
+    UsuariosModule,
   ],
 })
 export class AppModule { }

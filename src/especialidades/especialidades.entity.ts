@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import type { Relation } from 'typeorm';
 import { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
+import { Usuario } from '../usuarios/usuarios.entity.js';
 
 @Entity('especialidades')
 export class Especialidad {
@@ -26,4 +27,7 @@ export class Especialidad {
 
     @UpdateDateColumn({ type: 'timestamptz' })
     modificado: Date;
+
+    @ManyToMany(() => Usuario, (usuario) => usuario.especialidades)
+    usuarios: Relation<Usuario[]>;
 }
