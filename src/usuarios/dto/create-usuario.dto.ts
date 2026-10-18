@@ -22,6 +22,16 @@ export class CreateUsuarioDto {
   @Matches(/\S/)
   apellido: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  @Matches(/\S/)
+  username: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
   @IsArray()
   @IsNumberString({}, { each: true })
   especialidades: string[];

@@ -22,6 +22,12 @@ export class Usuario {
     @Column({ length: 50 })
     apellido: string;
 
+    @Column({ length: 50, unique: true })
+    username: string;
+
+    @Column({ type: 'text' })
+    password: string;
+
     @Column({ type: 'boolean', default: false })
     is_admin: boolean;
 
