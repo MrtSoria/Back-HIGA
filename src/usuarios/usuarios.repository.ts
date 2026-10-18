@@ -49,6 +49,15 @@ export class UsuariosRepository {
         });
     }
 
+    async buscarPorUsername(username: string): Promise<Usuario | null> {
+        return this.usuarioRepository.findOne({
+            where: { username },
+            relations: {
+                especialidades: true,
+            }
+        });
+    }
+
     async crear(user: Usuario): Promise<Usuario> {
         return this.usuarioRepository.save(user);
     }

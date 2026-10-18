@@ -23,11 +23,22 @@ export class UsuariosService {
         }
         return user;
     }
+    async validarLogin(username: string, pass: string): Promise<Usuario> {
+        const user = await this.repository.buscarPorUsername(username);
+
+        if (!user || user.password !== pass) {
+            throw new NotFoundException('Credenciales inválidas');
+        }
+
+        return user;
+    }
 
     async crear(dto: CreateUsuarioDto): Promise<Usuario> {
         const user = new Usuario();
         user.nombre = dto.nombre;
         user.apellido = dto.apellido;
+        user.username = dto.username; 
+        user.password = dto.password;
         user.is_admin = dto.is_admin ?? false;
 
         const especialidades = await this.repository.buscarEspecialidades(

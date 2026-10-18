@@ -34,6 +34,16 @@ export class UsuariosController {
 
         return new UserResponseDto(user);
     }
+    
+    @Post('login')
+    async login(
+        @Body() body: { username: string; password: string }
+    ) {
+        const user = await this.service.validarLogin(body.username, body.password);
+        return {
+            usuario: new UserResponseDto(user)
+        };
+    }
 
     @Patch(':id')
     async actualizar(
