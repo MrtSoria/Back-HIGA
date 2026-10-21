@@ -22,6 +22,10 @@ export class UpdateUsuarioDto {
   apellido?: string;
 
   @IsOptional()
+  @IsString()
+  username?: string;
+
+  @IsOptional()
   @IsArray()
   @IsNumberString({}, { each: true })
   especialidades?: string[];
