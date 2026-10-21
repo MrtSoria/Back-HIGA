@@ -6,6 +6,7 @@ export class UserResponseDto {
     id: string;
     nombre: string;
     apellido: string;
+    username: string;
     is_admin: boolean;
     especialidades: EspecialidadResponseDto[];
 
@@ -13,6 +14,7 @@ export class UserResponseDto {
         this.id = user.id;
         this.nombre = user.nombre;
         this.apellido = user.apellido;
+        this.username = user.username;
         this.is_admin = user.is_admin;
         this.especialidades = user.especialidades.map(
             (especialidad) => new EspecialidadResponseDto(especialidad)
