@@ -22,20 +22,9 @@ export class DiagnosticosService {
 	async crear(
 		dto: CreateDiagnosticoDto,
 	): Promise<Diagnostico> {
-
-		const diagnostico = new Diagnostico();
-
-		diagnostico.titulo = dto.titulo;
-		diagnostico.desc = dto.desc;
-		diagnostico.etiquetas = dto.etiquetas ?? [];
-
 		const especialidades = await this.repository.buscarEspecialidades(
 			dto.especialidades,
 		);
-
-		diagnostico.especialidades = especialidades;
-
-		const creado = await this.repository.crear(diagnostico);
 
 		if (especialidades.length !== dto.especialidades.length) {
 			throw new NotFoundException(
@@ -43,10 +32,20 @@ export class DiagnosticosService {
 			);
 		}
 
+		const diagnostico = new Diagnostico();
+
+		diagnostico.titulo = dto.titulo;
+		diagnostico.desc = dto.desc;
+		diagnostico.etiquetas = dto.etiquetas ?? [];
+		diagnostico.especialidades = especialidades;
+
+		const creado = await this.repository.crear(diagnostico);
+
 		await this.historialService.registrarCambio(
 			Entidad.DIAGNOSTICO,
 			creado.id,
 			Operacion.CREATE,
+			especialidades.map(e => e.id)
 		);
 
 		return creado;
@@ -71,7 +70,7 @@ export class DiagnosticosService {
 		id: string,
 		dto: UpdateDiagnosticoDto,
 	): Promise<Diagnostico> {
-		await this.buscarPorId(id);
+		const diagnostico = await this.buscarPorId(id);
 
 		const { especialidades: ids_especialidades, ...campos } = dto;
 		const datos: Partial<Diagnostico> = { ...campos };
@@ -98,10 +97,18 @@ export class DiagnosticosService {
 			);
 		}
 
+		const afectadas = [
+			...new Set([
+				...diagnostico.especialidades.map(e => e.id),
+				...(actualizado.especialidades ?? []).map(e => e.id)
+			]),
+		];
+
 		await this.historialService.registrarCambio(
 			Entidad.DIAGNOSTICO,
 			actualizado.id,
 			Operacion.UPDATE,
+			afectadas
 		);
 
 		return actualizado;
@@ -116,12 +123,17 @@ export class DiagnosticosService {
 			);
 		}
 
+		const ids_especialidades = diagnostico.especialidades.map(
+			e => e.id
+		);
+
 		await this.repository.eliminar(id);
 
 		await this.historialService.registrarCambio(
 			Entidad.DIAGNOSTICO,
 			id,
 			Operacion.DELETE,
+			ids_especialidades,
 		);
 	}
 }

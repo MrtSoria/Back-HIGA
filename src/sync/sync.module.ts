@@ -6,6 +6,7 @@ import { Cambio } from '../historial/historial.entity.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Protocolo } from '../protocolos/protocolos.entity.js';
 import { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
+import { UsuariosModule } from '../usuarios/usuarios.module.js';
 
 @Module({
     imports: [
@@ -13,7 +14,8 @@ import { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
             Cambio,
             Diagnostico,
             Protocolo
-        ])
+        ]),
+        UsuariosModule
     ],
 
     controllers: [

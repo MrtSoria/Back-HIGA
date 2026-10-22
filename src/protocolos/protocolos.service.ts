@@ -23,16 +23,14 @@ export class ProtocolosService {
     async crear(
         dto: CreateProtocoloDto,
     ): Promise<Protocolo> {
+        const diagnostico = await this.diagnosticosService.buscarPorId(
+            dto.id_diagnostico,
+        );
 
         const protocolo = new Protocolo();
 
         protocolo.subtitulo = dto.subtitulo;
         protocolo.desc = dto.desc;
-
-        const diagnostico = await this.diagnosticosService.buscarPorId(
-            dto.id_diagnostico,
-        );
-
         protocolo.diagnostico = diagnostico;
 
         const creado = await this.repository.crear(protocolo);
@@ -41,6 +39,7 @@ export class ProtocolosService {
             Entidad.PROTOCOLO,
             creado.id,
             Operacion.CREATE,
+            diagnostico.especialidades.map(e => e.id),
         );
 
         return creado;
@@ -67,8 +66,7 @@ export class ProtocolosService {
         id: string,
         dto: UpdateProtocoloDto,
     ): Promise<Protocolo> {
-
-        await this.buscarPorId(id);
+        const protocoloAnterior = await this.buscarPorId(id);
 
         const datos: Partial<Protocolo> = {
             subtitulo: dto.subtitulo,
@@ -89,18 +87,29 @@ export class ProtocolosService {
             );
         }
 
+        const ids_especialidades = [
+            ...new Set([
+                ...protocoloAnterior.diagnostico.especialidades.map(e => e.id),
+                ...(actualizado.diagnostico?.especialidades ?? []).map(e => e.id),
+            ]),
+        ];
+
         await this.historialService.registrarCambio(
             Entidad.PROTOCOLO,
             actualizado.id,
             Operacion.UPDATE,
+            ids_especialidades,
         );
 
         return actualizado;
     }
 
     async eliminar(id: string): Promise<void> {
+        const protocolo = await this.buscarPorId(id);
 
-        await this.buscarPorId(id);
+        const ids_especialidades = protocolo.diagnostico.especialidades.map(
+            e => e.id,
+        );
 
         await this.repository.eliminar(id);
 
@@ -108,6 +117,7 @@ export class ProtocolosService {
             Entidad.PROTOCOLO,
             id,
             Operacion.DELETE,
+            ids_especialidades,
         );
     }
 }

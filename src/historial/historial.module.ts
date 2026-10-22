@@ -4,10 +4,13 @@ import { Cambio } from './historial.entity.js';
 import { HistorialRepository } from './historial.repository.js';
 import { HistorialService } from './historial.service.js';
 import { HistorialController } from './historial.controller.js';
+import { Especialidad } from '../especialidades/especialidades.entity.js';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Cambio]),
+        TypeOrmModule.forFeature([
+            Cambio, Especialidad
+        ]),
     ],
 
     controllers: [

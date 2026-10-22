@@ -40,7 +40,10 @@ export class SyncRepository {
             where: {
                 id: In(ids)
             },
-            relations: { protocolo: true }
+            relations: {
+                protocolo: true,
+                especialidades: true,
+            }
         })
     }
 
@@ -53,7 +56,11 @@ export class SyncRepository {
             where: {
                 id: In(ids)
             },
-            relations: { diagnostico: true }
+            relations: {
+                diagnostico: {
+                    especialidades: true
+                }
+            }
         });
     }
 }

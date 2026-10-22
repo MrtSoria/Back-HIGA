@@ -28,7 +28,9 @@ export class ProtocolosRepository {
         return this.protocoloRepository.findOne({
             where: { id },
             relations: {
-                diagnostico: true,
+                diagnostico: {
+                    especialidades: true,
+                },
             },
         });
     }

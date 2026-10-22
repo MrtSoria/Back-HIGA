@@ -12,12 +12,16 @@ export class HistorialService {
         entidad: Entidad,
         id_entidad: string,
         operacion: Operacion,
+        ids_especialidades: string[] = [],
     ) {
-        return this.repository.crear({
-            entidad,
-            id_entidad,
-            operacion,
-        });
+        return this.repository.crear(
+            {
+                entidad,
+                id_entidad,
+                operacion,
+            },
+            ids_especialidades,
+        );
     }
 
     async buscarTodos() {

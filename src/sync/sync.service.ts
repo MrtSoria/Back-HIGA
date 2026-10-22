@@ -6,11 +6,15 @@ import { Entidad, Operacion } from '../historial/historial.enums.js';
 import { SyncResponseDto } from './dto/sync-response.dto.js';
 import { DiagnosticoResponseDto } from '../diagnosticos/dto/diagnostic-response.dto.js';
 import { ProtocoloResponseDto } from '../protocolos/dto/protocol-response.dto.js';
+import { UsuariosRepository } from '../usuarios/usuarios.repository.js';
+import { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
+import { Protocolo } from '../protocolos/protocolos.entity.js';
 
 @Injectable()
 export class SyncService {
     constructor(
         private readonly repository: SyncRepository,
+        private readonly usersRepository: UsuariosRepository
     ) { }
 
     async sincronizar(dto: SyncRequestDto): Promise<SyncResponseDto> {
@@ -38,6 +42,13 @@ export class SyncService {
 
             cambiosConsolidados.set(key, cambio);
         }
+
+        const especialidadesUser =
+            await this.usersRepository.buscarEspecialidadesPorUsuario(dto.id);
+
+        const ids_especialidadesUser = new Set(
+            especialidadesUser.map(e => e.id)
+        );
 
         type Entity =
             | Entidad.DIAGNOSTICO
@@ -90,27 +101,78 @@ export class SyncService {
                 ),
             ]);
 
+        const dCorresponde = (diagnostico: Diagnostico): boolean => {
+            const ids_especialidadesDiag =
+                diagnostico.especialidades?.map(e => e.id) ?? [];
+
+            return (
+                ids_especialidadesUser.size === 0 ||
+                ids_especialidadesDiag.length === 0 ||
+                ids_especialidadesDiag.some(
+                    id => ids_especialidadesUser.has(id)
+                )
+            );
+        };
+
+        const pCorresponde = (protocolo: Protocolo): boolean => {
+            const diagnostico = protocolo.diagnostico;
+
+            if (!diagnostico) return false;
+
+            return dCorresponde(diagnostico);
+        }
+
+        const diagnosticosCreadosFiltrados =
+            diagnosticosCreados.filter(dCorresponde);
+
+        const diagnosticosActualizadosFiltrados =
+            diagnosticosActualizados.filter(dCorresponde);
+
+        const diagnosticosABorrar = [
+            ...new Set([
+                ...idsPorOperacion[Operacion.DELETE][Entidad.DIAGNOSTICO],
+                ...diagnosticosActualizados
+                    .filter(d => !dCorresponde(d))
+                    .map(d => d.id),
+            ]),
+        ];
+
+        const protocolosCreadosFiltrados =
+            protocolosCreados.filter(pCorresponde);
+
+        const protocolosActualizadosFiltrados =
+            protocolosActualizados.filter(pCorresponde);
+
+        const protocolosABorrar = [
+            ...new Set([
+                ...idsPorOperacion[Operacion.DELETE][Entidad.PROTOCOLO],
+                ...protocolosActualizados
+                    .filter(p => !pCorresponde(p))
+                    .map(p => p.id),
+            ]),
+        ];
+
         return {
             nro_sync: nroSync,
             created: {
-                diagnosticos: diagnosticosCreados.map(
-                    (diagnostico) => new DiagnosticoResponseDto(diagnostico),
+                diagnosticos: diagnosticosCreadosFiltrados.map(
+                    (d) => new DiagnosticoResponseDto(d),
                 ),
-                protocolos: protocolosCreados.map(
-                    (protocolo) => new ProtocoloResponseDto(protocolo),
+                protocolos: protocolosCreadosFiltrados.map(
+                    (p) => new ProtocoloResponseDto(p),
                 ),
             },
             updated: {
-                diagnosticos: diagnosticosActualizados.map(
-                    (diagnostico) => new DiagnosticoResponseDto(diagnostico),
+                diagnosticos: diagnosticosActualizadosFiltrados.map(
+                    (d) => new DiagnosticoResponseDto(d),
                 ),
-                protocolos: protocolosActualizados.map(
-                    (protocolo) => new ProtocoloResponseDto(protocolo),
+                protocolos: protocolosActualizadosFiltrados.map(
+                    (p) => new ProtocoloResponseDto(p),
                 ),
             },
             deleted: {
-                diagnosticos: idsPorOperacion[Operacion.DELETE][Entidad.DIAGNOSTICO],
-                protocolos: idsPorOperacion[Operacion.DELETE][Entidad.PROTOCOLO],
+                diagnosticos: diagnosticosABorrar,
+                protocolos: protocolosABorrar,
             },
         };
     }

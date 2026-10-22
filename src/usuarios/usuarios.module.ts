@@ -26,7 +26,8 @@ import { UsuariosRepository } from './usuarios.repository.js';
   ],
 
   exports: [
-    UsuariosService
+    UsuariosService,
+    UsuariosRepository
   ]
 })
 export class UsuariosModule { }
