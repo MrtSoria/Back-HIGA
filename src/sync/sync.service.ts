@@ -24,6 +24,13 @@ export class SyncService {
         // redundantes o innecesarias. 
         const cambiosConsolidados = new Map<string, Cambio>();
         for (const cambio of cambios) {
+            if (
+                cambio.entidad === Entidad.USUARIO && (
+                    cambio.operacion !== Operacion.UPDATE ||
+                    cambio.id_entidad !== dto.id
+                )
+            ) continue;
+
             const key = `${cambio.entidad}-${cambio.id_entidad}`;
             const cambioAnterior = cambiosConsolidados.get(key);
 
@@ -42,6 +49,16 @@ export class SyncService {
 
             cambiosConsolidados.set(key, cambio);
         }
+
+        const cambioUsuario = cambiosConsolidados.get(
+            `${Entidad.USUARIO}-${dto.id}`
+        );
+
+        const reset = Boolean(
+            cambioUsuario &&
+            cambioUsuario.operacion === Operacion.UPDATE &&
+            cambioUsuario.especialidades?.length
+        );
 
         const especialidadesUser =
             await this.usersRepository.buscarEspecialidadesPorUsuario(dto.id);
@@ -85,21 +102,22 @@ export class SyncService {
             nroSync = cambios[cambios.length - 1].id;
         }
 
-        const [diagnosticosCreados, diagnosticosActualizados,
-            protocolosCreados, protocolosActualizados] = await Promise.all([
-                this.repository.getDiagnosticos(
-                    idsPorOperacion[Operacion.CREATE][Entidad.DIAGNOSTICO],
-                ),
-                this.repository.getDiagnosticos(
-                    idsPorOperacion[Operacion.UPDATE][Entidad.DIAGNOSTICO],
-                ),
-                this.repository.getProtocolos(
-                    idsPorOperacion[Operacion.CREATE][Entidad.PROTOCOLO],
-                ),
-                this.repository.getProtocolos(
-                    idsPorOperacion[Operacion.UPDATE][Entidad.PROTOCOLO],
-                ),
-            ]);
+        const [diagnosticos, protocolos] = await Promise.all(
+            reset ? [
+                this.repository.getAllDiagnosticos(),
+                this.repository.getAllProtocolos(),
+            ]
+                : [
+                    this.repository.getDiagnosticos([
+                        ...idsPorOperacion[Operacion.CREATE][Entidad.DIAGNOSTICO],
+                        ...idsPorOperacion[Operacion.UPDATE][Entidad.DIAGNOSTICO],
+                    ]),
+                    this.repository.getProtocolos([
+                        ...idsPorOperacion[Operacion.CREATE][Entidad.PROTOCOLO],
+                        ...idsPorOperacion[Operacion.UPDATE][Entidad.PROTOCOLO],
+                    ]),
+                ],
+        );
 
         const dCorresponde = (diagnostico: Diagnostico): boolean => {
             const ids_especialidadesDiag =
@@ -122,54 +140,36 @@ export class SyncService {
             return dCorresponde(diagnostico);
         }
 
-        const diagnosticosCreadosFiltrados =
-            diagnosticosCreados.filter(dCorresponde);
-
-        const diagnosticosActualizadosFiltrados =
-            diagnosticosActualizados.filter(dCorresponde);
+        const diagnosticosFiltrados = diagnosticos.filter(dCorresponde);
+        const protocolosFiltrados = protocolos.filter(pCorresponde);
 
         const diagnosticosABorrar = [
             ...new Set([
                 ...idsPorOperacion[Operacion.DELETE][Entidad.DIAGNOSTICO],
-                ...diagnosticosActualizados
+                ...diagnosticos
                     .filter(d => !dCorresponde(d))
                     .map(d => d.id),
             ]),
         ];
 
-        const protocolosCreadosFiltrados =
-            protocolosCreados.filter(pCorresponde);
-
-        const protocolosActualizadosFiltrados =
-            protocolosActualizados.filter(pCorresponde);
-
         const protocolosABorrar = [
             ...new Set([
                 ...idsPorOperacion[Operacion.DELETE][Entidad.PROTOCOLO],
-                ...protocolosActualizados
+                ...protocolos
                     .filter(p => !pCorresponde(p))
-                    .map(p => p.id),
+                    .map(p => p.id)
             ]),
         ];
 
         return {
             nro_sync: nroSync,
-            created: {
-                diagnosticos: diagnosticosCreadosFiltrados.map(
-                    (d) => new DiagnosticoResponseDto(d),
-                ),
-                protocolos: protocolosCreadosFiltrados.map(
-                    (p) => new ProtocoloResponseDto(p),
-                ),
-            },
-            updated: {
-                diagnosticos: diagnosticosActualizadosFiltrados.map(
-                    (d) => new DiagnosticoResponseDto(d),
-                ),
-                protocolos: protocolosActualizadosFiltrados.map(
-                    (p) => new ProtocoloResponseDto(p),
-                ),
-            },
+            reset: reset,
+            diagnosticos: diagnosticosFiltrados.map(
+                d => new DiagnosticoResponseDto(d)
+            ),
+            protocolos: protocolosFiltrados.map(
+                p => new ProtocoloResponseDto(p)
+            ),
             deleted: {
                 diagnosticos: diagnosticosABorrar,
                 protocolos: protocolosABorrar,

@@ -24,6 +24,7 @@ export class SyncRepository {
     ): Promise<Cambio[]> {
         return this.cambioRepository.
             createQueryBuilder('cambio')
+            .leftJoinAndSelect('cambio.especialidades', 'especialidad')
             .where('cambio.id > :lastSync',
                 { lastSync }
             )
@@ -61,6 +62,25 @@ export class SyncRepository {
                     especialidades: true
                 }
             }
+        });
+    }
+
+    async getAllDiagnosticos(): Promise<Diagnostico[]> {
+        return this.diagnosticoRepository.find({
+            relations: {
+                protocolo: true,
+                especialidades: true,
+            },
+        });
+    }
+
+    async getAllProtocolos(): Promise<Protocolo[]> {
+        return this.protocoloRepository.find({
+            relations: {
+                diagnostico: {
+                    especialidades: true,
+                },
+            },
         });
     }
 }
