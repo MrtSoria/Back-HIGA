@@ -40,7 +40,7 @@ export class UsuariosService {
         const user = new Usuario();
         user.nombre = dto.nombre;
         user.apellido = dto.apellido;
-        user.username = dto.username;
+        user.username = dto.username; 
         user.password = dto.password;
         user.is_admin = dto.is_admin ?? false;
 

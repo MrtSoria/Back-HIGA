@@ -26,6 +26,10 @@ export class UpdateUsuarioDto {
   username?: string;
 
   @IsOptional()
+  @IsString()
+  password?: string;
+
+  @IsOptional()
   @IsArray()
   @IsNumberString({}, { each: true })
   especialidades?: string[];
