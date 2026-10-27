@@ -11,8 +11,12 @@ export class EspecialidadesRepository {
     ) { }
 
     async buscarTodos(): Promise<Especialidad[]> {
-        return this.especialidadRepository.find();
-    }
+    return this.especialidadRepository.find({ 
+            relations: {
+                diagnosticos: true 
+            } 
+        });
+}
 
     async buscarPorId(id: string): Promise<Especialidad | null> {
         return this.especialidadRepository.findOne({ where: { id } });
