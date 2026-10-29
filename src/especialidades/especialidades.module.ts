@@ -19,6 +19,9 @@ import { Especialidad } from '../especialidades/especialidades.entity.js';
   providers: [
     EspecialidadesService,
     EspecialidadesRepository
+  ],
+  exports: [
+    EspecialidadesRepository
   ]
 })
 export class EspecialidadesModule { }

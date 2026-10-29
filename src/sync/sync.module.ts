@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Protocolo } from '../protocolos/protocolos.entity.js';
 import { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
 import { UsuariosModule } from '../usuarios/usuarios.module.js';
+import { EspecialidadesModule } from '../especialidades/especialidades.module.js';
 
 @Module({
     imports: [
@@ -15,7 +16,8 @@ import { UsuariosModule } from '../usuarios/usuarios.module.js';
             Diagnostico,
             Protocolo
         ]),
-        UsuariosModule
+        UsuariosModule,
+        EspecialidadesModule
     ],
 
     controllers: [

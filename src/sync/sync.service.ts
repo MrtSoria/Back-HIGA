@@ -9,12 +9,16 @@ import { ProtocoloResponseDto } from '../protocolos/dto/protocol-response.dto.js
 import { UsuariosRepository } from '../usuarios/usuarios.repository.js';
 import { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
 import { Protocolo } from '../protocolos/protocolos.entity.js';
+import { EspecialidadesRepository } from '../especialidades/especialidades.repository.js';
+import { Especialidad } from '../especialidades/especialidades.entity.js';
+import { EspecialidadResponseDto } from '../especialidades/dto/especialidad-response.dto.js';
 
 @Injectable()
 export class SyncService {
     constructor(
         private readonly repository: SyncRepository,
-        private readonly usersRepository: UsuariosRepository
+        private readonly usersRepository: UsuariosRepository,
+        private readonly espRepository: EspecialidadesRepository,
     ) { }
 
     async sincronizar(dto: SyncRequestDto): Promise<SyncResponseDto> {
@@ -50,6 +54,18 @@ export class SyncService {
             cambiosConsolidados.set(key, cambio);
         }
 
+        const idsEspecialidadesActualizadas = [
+            ...new Set(
+                [...cambiosConsolidados.values()]
+                    .filter(
+                        c =>
+                            c.entidad === Entidad.ESPECIALIDAD &&
+                            c.operacion === Operacion.UPDATE
+                    )
+                    .map(c => c.id_entidad)
+            )
+        ];
+
         const cambioUsuario = cambiosConsolidados.get(
             `${Entidad.USUARIO}-${dto.id}`
         );
@@ -65,6 +81,16 @@ export class SyncService {
 
         const ids_especialidadesUser = new Set(
             especialidadesUser.map(e => e.id)
+        );
+
+        const especialidadesActualizadas = await Promise.all(
+            idsEspecialidadesActualizadas
+                .filter(id => ids_especialidadesUser.has(id))
+                .map(id => this.espRepository.buscarPorId(id))
+        );
+
+        const especialidadesFiltradas = especialidadesActualizadas.filter(
+            (e): e is Especialidad => e !== null
         );
 
         type Entity =
@@ -169,6 +195,9 @@ export class SyncService {
             ),
             protocolos: protocolosFiltrados.map(
                 p => new ProtocoloResponseDto(p)
+            ),
+            especialidades: especialidadesFiltradas.map(
+                e => new EspecialidadResponseDto(e)
             ),
             deleted: {
                 diagnosticos: diagnosticosABorrar,
