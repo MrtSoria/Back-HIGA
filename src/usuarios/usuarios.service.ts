@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsuariosRepository } from './usuarios.repository.js';
 import { Usuario } from './usuarios.entity.js';
@@ -6,6 +7,7 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto.js';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto.js';
 import { Entidad, Operacion } from '../historial/historial.enums.js';
 import { HistorialService } from '../historial/historial.service.js';
+
 
 @Injectable()
 export class UsuariosService {
@@ -27,9 +29,16 @@ export class UsuariosService {
         return user;
     }
     async validarLogin(username: string, pass: string): Promise<Usuario> {
-        const user = await this.repository.buscarPorUsername(username);
+        const user = await this.repository.buscarPorUsername(username.toLowerCase());
 
-        if (!user || user.password !== pass) {
+       if (!user) {
+            throw new NotFoundException('Credenciales inválidas');
+        }
+
+       
+        const isMatch = await bcrypt.compare(pass, user.password);
+
+        if (!isMatch) {
             throw new NotFoundException('Credenciales inválidas');
         }
 
@@ -40,8 +49,12 @@ export class UsuariosService {
         const user = new Usuario();
         user.nombre = dto.nombre;
         user.apellido = dto.apellido;
-        user.username = dto.username; 
-        user.password = dto.password;
+        user.username = dto.username.toLowerCase();
+       
+
+        const saltRounds = 10;
+        user.password = await bcrypt.hash(dto.password, saltRounds);
+
         user.is_admin = dto.is_admin ?? false;
 
         const especialidades = await this.repository.buscarEspecialidades(
@@ -76,6 +89,10 @@ export class UsuariosService {
         const { especialidades: idsEspecialidades, ...campos } = dto;
         const datos: Partial<Usuario> = { ...campos };
 
+        if (datos.username) {
+            datos.username = datos.username.toLowerCase();
+        }
+
         let especialidadesAfectadas: string[] = [];
 
         if (idsEspecialidades !== undefined) {
@@ -101,6 +118,10 @@ export class UsuariosService {
             }
 
             datos.especialidades = especialidades;
+        }
+
+        if (datos.password) {
+        datos.password = await bcrypt.hash(datos.password, 10);
         }
 
         const actualizado = await this.repository.actualizar(id, datos);
