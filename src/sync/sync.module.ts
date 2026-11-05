@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { SyncController } from './sync.controller.js';
 import { SyncService } from './sync.service.js';
 import { SyncRepository } from './sync.repository.js';
+import { SyncChangePlanner } from './sync-change-planner.service.js';
+import { SyncContentService } from './sync-content.service.js';
 import { Cambio } from '../historial/historial.entity.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Protocolo } from '../protocolos/protocolos.entity.js';
@@ -27,6 +29,8 @@ import { EspecialidadesModule } from '../especialidades/especialidades.module.js
     providers: [
         SyncService,
         SyncRepository,
+        SyncChangePlanner,
+        SyncContentService,
     ],
 })
 export class SyncModule { }

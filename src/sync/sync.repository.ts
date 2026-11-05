@@ -48,6 +48,24 @@ export class SyncRepository {
         })
     }
 
+    async getDiagnosticosPorEspecialidades(
+        idsEspecialidades: string[],
+    ): Promise<Diagnostico[]> {
+        if (idsEspecialidades.length === 0) return [];
+
+        return this.diagnosticoRepository
+            .createQueryBuilder('diagnostico')
+            .innerJoin(
+                'diagnostico.especialidades',
+                'especialidadFiltro',
+                'especialidadFiltro.id IN (:...idsEspecialidades)',
+                { idsEspecialidades }
+            )
+            .leftJoinAndSelect('diagnostico.especialidades', 'especialidad')
+            .leftJoinAndSelect('diagnostico.protocolo', 'protocolo')
+            .getMany();
+    }
+
     async getProtocolos(ids: string[]): Promise<Protocolo[]> {
         if (!ids || ids.length === 0) {
             return [];

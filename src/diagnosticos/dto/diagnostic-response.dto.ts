@@ -17,9 +17,9 @@ export class DiagnosticoResponseDto {
         this.desc = diagnostico.desc;
         this.protocolo = diagnostico.protocolo ?
             new ProtocoloResponseDto(diagnostico.protocolo) : undefined;
-        this.especialidades = diagnostico.especialidades.map(
-            (especialidad) => new EspecialidadResponseDto(especialidad)
-        );
+        this.especialidades = (diagnostico.especialidades ?? [])
+            .filter(especialidad => especialidad.deleted_at === null)
+            .map(especialidad => new EspecialidadResponseDto(especialidad));
         this.etiquetas = diagnostico.etiquetas ?? [];
     }
 }

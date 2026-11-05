@@ -31,11 +31,11 @@ export class UsuariosService {
     async validarLogin(username: string, pass: string): Promise<Usuario> {
         const user = await this.repository.buscarPorUsername(username.toLowerCase());
 
-       if (!user) {
+        if (!user) {
             throw new NotFoundException('Credenciales inválidas');
         }
 
-       
+
         const isMatch = await bcrypt.compare(pass, user.password);
 
         if (!isMatch) {
@@ -50,7 +50,7 @@ export class UsuariosService {
         user.nombre = dto.nombre;
         user.apellido = dto.apellido;
         user.username = dto.username.toLowerCase();
-       
+
 
         const saltRounds = 10;
         user.password = await bcrypt.hash(dto.password, saltRounds);
@@ -81,11 +81,6 @@ export class UsuariosService {
     async actualizar(id: string, dto: UpdateUsuarioDto): Promise<Usuario> {
         await this.buscarPorId(id);
 
-        const especialidadesAnteriores =
-            await this.buscarEspecialidadesPorUsuario(id);
-
-        const idsAnteriores = especialidadesAnteriores.map(e => e.id);
-
         const { especialidades: idsEspecialidades, ...campos } = dto;
         const datos: Partial<Usuario> = { ...campos };
 
@@ -96,32 +91,38 @@ export class UsuariosService {
         let especialidadesAfectadas: string[] = [];
 
         if (idsEspecialidades !== undefined) {
-            const especialidades = await this.repository.buscarEspecialidades(
+            const asociadas = await this.buscarEspecialidadesPorUsuario(id);
+            const retenidas = asociadas.filter(e => e.deleted_at !== null);
+            const actuales = new Set(
+                asociadas
+                    .filter(e => e.deleted_at === null)
+                    .map(e => e.id),
+            );
+            const nuevas = new Set(idsEspecialidades);
+            const solicitadas = await this.repository.buscarEspecialidades(
                 idsEspecialidades,
             );
 
-            if (especialidades.length !== idsEspecialidades.length) {
-                throw new NotFoundException('Una o más especialidades no existen');
+            if (solicitadas.length !== idsEspecialidades.length) {
+                throw new NotFoundException(
+                    'Una o más especialidades no existen o están eliminadas',
+                );
             }
 
-            const setAnterior = new Set(idsAnteriores);
-            const setNew = new Set(idsEspecialidades);
-
-            const cambioEspecialidades =
-                setAnterior.size !== setNew.size ||
-                [...setAnterior].some(id => !setNew.has(id));
-
-            if (cambioEspecialidades) {
+            if (
+                actuales.size !== nuevas.size ||
+                [...actuales].some(id => !nuevas.has(id))
+            ) {
                 especialidadesAfectadas = [
-                    ...new Set([...idsAnteriores, ...idsEspecialidades]),
+                    ...new Set([...actuales, ...nuevas]),
                 ];
             }
 
-            datos.especialidades = especialidades;
+            datos.especialidades = [...solicitadas, ...retenidas];
         }
 
         if (datos.password) {
-        datos.password = await bcrypt.hash(datos.password, 10);
+            datos.password = await bcrypt.hash(datos.password, 10);
         }
 
         const actualizado = await this.repository.actualizar(id, datos);

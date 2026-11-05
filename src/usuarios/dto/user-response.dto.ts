@@ -16,8 +16,8 @@ export class UserResponseDto {
         this.apellido = user.apellido;
         this.username = user.username;
         this.is_admin = user.is_admin;
-        this.especialidades = user.especialidades.map(
-            (especialidad) => new EspecialidadResponseDto(especialidad)
-        );
+        this.especialidades = (user.especialidades ?? [])
+            .filter(especialidad => especialidad.deleted_at === null)
+            .map(especialidad => new EspecialidadResponseDto(especialidad));
     }
 }

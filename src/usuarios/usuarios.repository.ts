@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository } from "typeorm";
+import { In, IsNull, Repository } from "typeorm";
 import { Usuario } from "./usuarios.entity.js";
 import { Especialidad } from "../especialidades/especialidades.entity.js";
 
@@ -18,7 +18,7 @@ export class UsuariosRepository {
         if (ids.length === 0) return [];
 
         return this.especialidadRepository.find({
-            where: { id: In(ids) }
+            where: { id: In(ids), deleted_at: IsNull() }
         })
     }
 
@@ -30,6 +30,38 @@ export class UsuariosRepository {
             }
         })
         return user?.especialidades ?? [];
+    }
+
+    async buscarEspecialidadesActivasPorUsuario(
+        userId: string,
+    ): Promise<Especialidad[]> {
+        const user = await this.usuarioRepository.findOne({
+            where: {
+                id: userId
+            },
+            relations: {
+                especialidades: true,
+            },
+        });
+
+        return user?.especialidades.filter(
+            e => e.deleted_at === null,
+        ) ?? [];
+    }
+
+    async perteneciaAEspecialidadEliminada(
+        userId: string,
+        espId: string,
+    ): Promise<boolean> {
+        const count = await this.usuarioRepository
+            .createQueryBuilder('usuario')
+            .innerJoin('usuario.especialidades', 'especialidad')
+            .where('usuario.id = :userId', { userId })
+            .andWhere('especialidad.id = :espId', { espId })
+            .andWhere('especialidad.deleted_at IS NOT NULL')
+            .getCount();
+
+        return count > 0;
     }
 
     async buscarTodos(): Promise<Usuario[]> {

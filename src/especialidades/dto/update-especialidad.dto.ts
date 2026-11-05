@@ -2,9 +2,7 @@ import {
   IsOptional,
   IsString,
   Matches,
-  MaxLength,
-  IsArray,
-  ArrayMaxSize
+  MaxLength
 } from 'class-validator';
 
 export class UpdateEspecialidadDto {

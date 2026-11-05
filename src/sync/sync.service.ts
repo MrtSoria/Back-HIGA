@@ -1,208 +1,51 @@
 import { Injectable } from '@nestjs/common';
 import { SyncRequestDto } from './dto/sync-request.dto.js';
-import { SyncRepository } from './sync.repository.js';
-import { Cambio } from '../historial/historial.entity.js';
-import { Entidad, Operacion } from '../historial/historial.enums.js';
-import { SyncResponseDto } from './dto/sync-response.dto.js';
+import { SyncResponseDto, SyncUsuarioDto } from './dto/sync-response.dto.js';
 import { DiagnosticoResponseDto } from '../diagnosticos/dto/diagnostic-response.dto.js';
 import { ProtocoloResponseDto } from '../protocolos/dto/protocol-response.dto.js';
-import { UsuariosRepository } from '../usuarios/usuarios.repository.js';
-import { Diagnostico } from '../diagnosticos/diagnosticos.entity.js';
-import { Protocolo } from '../protocolos/protocolos.entity.js';
-import { EspecialidadesRepository } from '../especialidades/especialidades.repository.js';
-import { Especialidad } from '../especialidades/especialidades.entity.js';
-import { EspecialidadResponseDto } from '../especialidades/dto/especialidad-response.dto.js';
+import { SyncChangePlanner } from './sync-change-planner.service.js';
+import { SyncContentBatch, SyncContentService } from './sync-content.service.js';
 
 @Injectable()
 export class SyncService {
     constructor(
-        private readonly repository: SyncRepository,
-        private readonly usersRepository: UsuariosRepository,
-        private readonly espRepository: EspecialidadesRepository,
+        private readonly changePlanner: SyncChangePlanner,
+        private readonly contentService: SyncContentService,
     ) { }
 
     async sincronizar(dto: SyncRequestDto): Promise<SyncResponseDto> {
-        const cambios = await this.repository.getSyncData(dto.sync);
-
-        // Se guarda la ultima operacion sobre una entidad para evitar acciones 
-        // redundantes o innecesarias. 
-        const cambiosConsolidados = new Map<string, Cambio>();
-        for (const cambio of cambios) {
-            if (
-                cambio.entidad === Entidad.USUARIO && (
-                    cambio.operacion !== Operacion.UPDATE ||
-                    cambio.id_entidad !== dto.id
-                )
-            ) continue;
-
-            const key = `${cambio.entidad}-${cambio.id_entidad}`;
-            const cambioAnterior = cambiosConsolidados.get(key);
-
-            if (
-                cambioAnterior?.operacion === Operacion.CREATE &&
-                cambio.operacion === Operacion.UPDATE
-            ) continue;
-
-            if (
-                cambioAnterior?.operacion === Operacion.CREATE &&
-                cambio.operacion === Operacion.DELETE
-            ) {
-                cambiosConsolidados.delete(key);
-                continue;
+        const now = new Date();
+        const plan = await this.changePlanner.planificar(dto, now);
+        const contenido: SyncContentBatch = plan.usuario_eliminado
+            ? {
+                diagnosticos: [],
+                protocolos: [],
+                deleted: { diagnosticos: [], protocolos: [] },
             }
-
-            cambiosConsolidados.set(key, cambio);
-        }
-
-        const idsEspecialidadesActualizadas = [
-            ...new Set(
-                [...cambiosConsolidados.values()]
-                    .filter(
-                        c =>
-                            c.entidad === Entidad.ESPECIALIDAD &&
-                            c.operacion === Operacion.UPDATE
-                    )
-                    .map(c => c.id_entidad)
-            )
-        ];
-
-        const cambioUsuario = cambiosConsolidados.get(
-            `${Entidad.USUARIO}-${dto.id}`
-        );
-
-        const reset = Boolean(
-            cambioUsuario &&
-            cambioUsuario.operacion === Operacion.UPDATE &&
-            cambioUsuario.especialidades?.length
-        );
-
-        const especialidadesUser =
-            await this.usersRepository.buscarEspecialidadesPorUsuario(dto.id);
-
-        const ids_especialidadesUser = new Set(
-            especialidadesUser.map(e => e.id)
-        );
-
-        const especialidadesActualizadas = await Promise.all(
-            idsEspecialidadesActualizadas
-                .filter(id => ids_especialidadesUser.has(id))
-                .map(id => this.espRepository.buscarPorId(id))
-        );
-
-        const especialidadesFiltradas = especialidadesActualizadas.filter(
-            (e): e is Especialidad => e !== null
-        );
-
-        type Entity =
-            | Entidad.DIAGNOSTICO
-            | Entidad.PROTOCOLO;
-
-        const idsPorOperacion: Record<Operacion,
-            Record<Entity, string[]>> = {
-            [Operacion.CREATE]: {
-                [Entidad.DIAGNOSTICO]: [],
-                [Entidad.PROTOCOLO]: [],
-            },
-            [Operacion.UPDATE]: {
-                [Entidad.DIAGNOSTICO]: [],
-                [Entidad.PROTOCOLO]: [],
-            },
-            [Operacion.DELETE]: {
-                [Entidad.DIAGNOSTICO]: [],
-                [Entidad.PROTOCOLO]: []
-            }
-        }
-
-        let nroSync = dto.sync;
-        for (const cambio of cambiosConsolidados.values()) {
-            if (
-                cambio.entidad === Entidad.DIAGNOSTICO ||
-                cambio.entidad === Entidad.PROTOCOLO
-            ) {
-                idsPorOperacion[cambio.operacion][cambio.entidad]
-                    .push(cambio.id_entidad);
-            }
-        }
-
-        if (cambios.length > 0) {
-            nroSync = cambios[cambios.length - 1].id;
-        }
-
-        const [diagnosticos, protocolos] = await Promise.all(
-            reset ? [
-                this.repository.getAllDiagnosticos(),
-                this.repository.getAllProtocolos(),
-            ]
-                : [
-                    this.repository.getDiagnosticos([
-                        ...idsPorOperacion[Operacion.CREATE][Entidad.DIAGNOSTICO],
-                        ...idsPorOperacion[Operacion.UPDATE][Entidad.DIAGNOSTICO],
-                    ]),
-                    this.repository.getProtocolos([
-                        ...idsPorOperacion[Operacion.CREATE][Entidad.PROTOCOLO],
-                        ...idsPorOperacion[Operacion.UPDATE][Entidad.PROTOCOLO],
-                    ]),
-                ],
-        );
-
-        const dCorresponde = (diagnostico: Diagnostico): boolean => {
-            const ids_especialidadesDiag =
-                diagnostico.especialidades?.map(e => e.id) ?? [];
-
-            return (
-                ids_especialidadesUser.size === 0 ||
-                ids_especialidadesDiag.length === 0 ||
-                ids_especialidadesDiag.some(
-                    id => ids_especialidadesUser.has(id)
-                )
-            );
-        };
-
-        const pCorresponde = (protocolo: Protocolo): boolean => {
-            const diagnostico = protocolo.diagnostico;
-
-            if (!diagnostico) return false;
-
-            return dCorresponde(diagnostico);
-        }
-
-        const diagnosticosFiltrados = diagnosticos.filter(dCorresponde);
-        const protocolosFiltrados = protocolos.filter(pCorresponde);
-
-        const diagnosticosABorrar = [
-            ...new Set([
-                ...idsPorOperacion[Operacion.DELETE][Entidad.DIAGNOSTICO],
-                ...diagnosticos
-                    .filter(d => !dCorresponde(d))
-                    .map(d => d.id),
-            ]),
-        ];
-
-        const protocolosABorrar = [
-            ...new Set([
-                ...idsPorOperacion[Operacion.DELETE][Entidad.PROTOCOLO],
-                ...protocolos
-                    .filter(p => !pCorresponde(p))
-                    .map(p => p.id)
-            ]),
-        ];
+            : await this.contentService.construir(plan);
 
         return {
-            nro_sync: nroSync,
-            reset: reset,
-            diagnosticos: diagnosticosFiltrados.map(
-                d => new DiagnosticoResponseDto(d)
+            nro_sync: plan.nroSync,
+            last_sync_at: now.toISOString(),
+            reset: plan.reset,
+            diagnosticos: contenido.diagnosticos.map(
+                diagnostico => new DiagnosticoResponseDto(diagnostico),
             ),
-            protocolos: protocolosFiltrados.map(
-                p => new ProtocoloResponseDto(p)
+            protocolos: contenido.protocolos.map(
+                protocolo => new ProtocoloResponseDto(protocolo),
             ),
-            especialidades: especialidadesFiltradas.map(
-                e => new EspecialidadResponseDto(e)
-            ),
-            deleted: {
-                diagnosticos: diagnosticosABorrar,
-                protocolos: protocolosABorrar,
-            },
+            especialidades: plan.especialidadesUsuario,
+            deleted: plan.reset ?
+                {
+                    diagnosticos: [],
+                    protocolos: [],
+                } : {
+                    ...contenido.deleted,
+                },
+            usuario_actualizado: plan.usuario_actualizado
+                ? new SyncUsuarioDto(plan.usuario_actualizado)
+                : null,
+            usuario_eliminado: plan.usuario_eliminado,
         };
     }
 }

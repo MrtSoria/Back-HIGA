@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { Diagnostico } from './diagnosticos.entity.js';
 import { Especialidad } from '../especialidades/especialidades.entity.js';
 
@@ -18,7 +18,7 @@ export class DiagnosticosRepository {
 		if (ids.length === 0) return [];
 
 		return this.especialidadRepository.find({
-			where: { id: In(ids) }
+			where: { id: In(ids), deleted_at: IsNull() }
 		})
 	}
 

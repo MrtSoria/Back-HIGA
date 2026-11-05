@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { Especialidad } from "./especialidades.entity.js";
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 
 @Injectable()
 export class EspecialidadesRepository {
@@ -12,14 +12,33 @@ export class EspecialidadesRepository {
 
     async buscarTodos(): Promise<Especialidad[]> {
         return this.especialidadRepository.find({
+            where: {
+                deleted_at: IsNull()
+            },
             relations: {
                 diagnosticos: true
             }
         });
     }
 
+    async buscarActivas(): Promise<Especialidad[]> {
+        return this.especialidadRepository.find({
+            where: {
+                deleted_at: IsNull(),
+            },
+        });
+    }
+
     async buscarPorId(id: string): Promise<Especialidad | null> {
-        return this.especialidadRepository.findOne({ where: { id } });
+        return this.especialidadRepository.findOne({
+            where: {
+                id,
+                deleted_at: IsNull()
+            },
+            relations: {
+                diagnosticos: true
+            }
+        });
     }
 
     async crear(especialidad: Especialidad): Promise<Especialidad> {
