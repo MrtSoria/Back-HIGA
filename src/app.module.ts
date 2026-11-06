@@ -12,6 +12,7 @@ import { EspecialidadesModule } from './especialidades/especialidades.module.js'
 import { Especialidad } from './especialidades/especialidades.entity.js';
 import { UsuariosModule } from './usuarios/usuarios.module.js';
 import { Usuario } from './usuarios/usuarios.entity.js';
+import { StorageModule } from './storage/storage.module.js';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { Usuario } from './usuarios/usuarios.entity.js';
     HistorialModule,
     EspecialidadesModule,
     UsuariosModule,
+    StorageModule,
   ],
 })
 export class AppModule { }
