@@ -3,6 +3,7 @@ import { UsuariosService } from './usuarios.service.js';
 import { CreateUsuarioDto } from './dto/create-usuario.dto.js';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto.js';
 import { UserResponseDto } from './dto/user-response.dto.js';
+import { OmitirValidacionUsuario } from '../common/usuario-existente.decorator.js';
 
 @Controller('usuarios')
 export class UsuariosController {
@@ -36,6 +37,7 @@ export class UsuariosController {
     }
     
     @Post('login')
+    @OmitirValidacionUsuario()
     async login(
         @Body() body: { username: string; password: string }
     ) {

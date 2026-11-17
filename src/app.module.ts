@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Diagnostico } from './diagnosticos/diagnosticos.entity.js';
 import { Protocolo } from './protocolos/protocolos.entity.js';
@@ -13,6 +14,7 @@ import { Especialidad } from './especialidades/especialidades.entity.js';
 import { UsuariosModule } from './usuarios/usuarios.module.js';
 import { Usuario } from './usuarios/usuarios.entity.js';
 import { StorageModule } from './storage/storage.module.js';
+import { UsuarioExistenteGuard } from './common/usuario-existente.guard.js';
 
 @Module({
   imports: [
@@ -36,6 +38,12 @@ import { StorageModule } from './storage/storage.module.js';
     EspecialidadesModule,
     UsuariosModule,
     StorageModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: UsuarioExistenteGuard,
+    },
   ],
 })
 export class AppModule { }
