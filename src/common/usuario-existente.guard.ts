@@ -1,6 +1,7 @@
 import {
 	CanActivate,
 	ExecutionContext,
+	ForbiddenException,
 	Injectable,
 	UnauthorizedException,
 } from '@nestjs/common';
@@ -45,6 +46,12 @@ export class UsuarioExistenteGuard implements CanActivate {
 		if (!usuario) {
 			throw new UnauthorizedException(
 				'El usuario no existe o fue eliminado',
+			);
+		}
+
+		if (!usuario.is_admin) {
+			throw new ForbiddenException(
+				'Se requieren permisos de administrador para modificar datos',
 			);
 		}
 

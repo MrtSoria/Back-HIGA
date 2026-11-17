@@ -1,5 +1,6 @@
 import {
 	ExecutionContext,
+	ForbiddenException,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -57,13 +58,27 @@ describe('UsuarioExistenteGuard', () => {
 	});
 
 	it('permite modificar cuando el usuario existe', async () => {
-		buscarPorId.mockResolvedValue(new Usuario());
+		const usuario = new Usuario();
+		usuario.is_admin = true;
+		buscarPorId.mockResolvedValue(usuario);
 
 		await expect(
 			guard.canActivate(crearContexto('POST', {
 				'x-user-id': '42',
 			})),
 		).resolves.toBe(true);
+	});
+
+	it('rechaza modificaciones de usuarios sin permisos de administrador', async () => {
+		const usuario = new Usuario();
+		usuario.is_admin = false;
+		buscarPorId.mockResolvedValue(usuario);
+
+		await expect(
+			guard.canActivate(crearContexto('PATCH', {
+				'x-user-id': '42',
+			})),
+		).rejects.toBeInstanceOf(ForbiddenException);
 	});
 
 	it('no exige usuario para las lecturas ni el login', async () => {
